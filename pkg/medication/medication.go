@@ -46,6 +46,15 @@ func (m *Medication) GetWeight() uint {
 	return m.weight
 }
 
+func (m *Medication) GetDTO() MedicationDTO {
+	return MedicationDTO{
+		Name:   m.name,
+		Weight: m.weight,
+		Code:   m.code,
+		Image:  m.image,
+	}
+}
+
 func isValidName(name string) bool {
 	match, err := regexp.MatchString("^[A-Za-z0-9?_-]+$", name)
 	if err != nil {
