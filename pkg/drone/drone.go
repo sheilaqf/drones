@@ -2,6 +2,7 @@ package drone
 
 import (
 	"drones/pkg/medication"
+	"errors"
 )
 
 type (
@@ -15,3 +16,28 @@ type (
 		LoadedMedication []medication.Medication `json:"loaded_medication"`
 	}
 )
+
+func (d *Drone) CurrentWeight() uint16 {
+
+	currentWeight := uint16(0)
+
+	for _, v := range d.LoadedMedication {
+		currentWeight += uint16(v.Weight)
+	}
+
+	return currentWeight
+}
+
+func (d *Drone) IsAcceptableLoad(medication medication.Medication) bool {
+	return medication.Weight+uint(d.CurrentWeight()) <= uint(d.WeightLimit)
+}
+
+func (d *Drone) LoadNewMedication(medication medication.Medication) error {
+
+	if d.IsAcceptableLoad(medication) {
+		d.LoadedMedication = append(d.LoadedMedication, medication)
+		return nil
+	}
+
+	return errors.New("the drone must not being loaded with more weight that it can carry")
+}
