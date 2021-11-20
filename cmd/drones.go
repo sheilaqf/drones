@@ -1,11 +1,11 @@
 package main
 
 import (
-	. "github.com/sheilaqf/drones/internal/pkg/drone"
+	"drones/pkg/drone"
 )
 
 var (
-	registeredDrones map[string]Drone // use SerialNumber as key
+	registeredDrones map[string]drone.Drone // use SerialNumber as key
 )
 
 func main() {
