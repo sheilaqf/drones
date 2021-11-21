@@ -1,4 +1,4 @@
-// implements routines for manipulating drone objects.
+// Implements routines for manipulating drone objects.
 package drone
 
 import (

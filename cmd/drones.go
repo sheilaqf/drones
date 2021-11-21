@@ -1,3 +1,5 @@
+// Implements a service via REST API that allows clients to communicate with the drones (i.e. **dispatch controller**).
+// The specific communication with the drone is outside the scope of this app.
 package main
 
 import (

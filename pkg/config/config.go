@@ -9,6 +9,7 @@ import (
 	"github.com/pkg/errors"
 )
 
+// represents the configuration for the app
 type Config struct {
 	ApiPort          string `json:"api_port"`
 	LocalURL         string `json:"local_url"`

@@ -1,4 +1,4 @@
-// implements routines for manipulating medication objects.
+// Implements routines for manipulating medication objects.
 package medication
 
 import (
