@@ -1,3 +1,4 @@
+// implements routines for manipulating drone objects.
 package drone
 
 import (
@@ -13,17 +14,17 @@ const (
 	maxWeightLimit            = 500
 	maxBatteryCapacity        = 100
 	//allowed models
-	modelLightweight   = "Lightweight"
-	modelMiddleweight  = "Middleweight"
-	modelCruiserweight = "Cruiserweight"
-	modelHeavyweight   = "Heavyweight"
+	ModelLightweight   = "Lightweight"
+	ModelMiddleweight  = "Middleweight"
+	ModelCruiserweight = "Cruiserweight"
+	ModelHeavyweight   = "Heavyweight"
 	//allowed states
-	stateIdle       = "IDLE"
-	stateLoading    = "LOADING"
-	stateLoaded     = "LOADED"
-	stateDelivering = "DELIVERING"
-	stateDelivered  = "DELIVERED"
-	stateReturning  = "RETURNING"
+	StateIdle       = "IDLE"
+	StateLoading    = "LOADING"
+	StateLoaded     = "LOADED"
+	StateDelivering = "DELIVERING"
+	StateDelivered  = "DELIVERED"
+	StateReturning  = "RETURNING"
 
 	forbiddenBatteryLevelForStateLoading = 25
 )
@@ -74,16 +75,23 @@ func NewDrone(dto DroneDTO) (*Drone, error) {
 	}
 
 	if thereIsLoadingStateAndBatteryLevelUnderPercentage(dto.State, dto.BatteryCapacity) {
-		return nil, fmt.Errorf("drone should not be %s when the battery level is below %d %%", stateLoading, forbiddenBatteryLevelForStateLoading)
+		return nil, fmt.Errorf("drone should not be %s when the battery level is below %d %%", StateLoading, forbiddenBatteryLevelForStateLoading)
 	}
 
-	return &Drone{
+	drone := &Drone{
 		serialNumber:    dto.SerialNumber,
 		model:           dto.Model,
 		weightLimit:     dto.WeightLimit,
 		batteryCapacity: dto.BatteryCapacity,
 		state:           dto.State,
-	}, nil
+	}
+
+	err := drone.LoadSetOfMedications(dto.Medications)
+	if err != nil {
+		return drone, err
+	}
+
+	return drone, nil
 }
 
 func (d *Drone) CurrentWeight() uint16 {
@@ -107,13 +115,13 @@ func (d *Drone) LoadNewMedication(medication medication.Medication) error {
 	defer d.Unlock()
 
 	if d.batteryCapacity < forbiddenBatteryLevelForStateLoading {
-		return fmt.Errorf("drone should not be %s when the battery level is below %d %%", stateLoading, forbiddenBatteryLevelForStateLoading)
+		return fmt.Errorf("drone should not be %s when the battery level is below %d %%", StateLoading, forbiddenBatteryLevelForStateLoading)
 	}
 
 	if d.IsAcceptableLoad(medication) {
-		d.state = stateLoading
+		d.state = StateLoading
 		d.medications = append(d.medications, medication)
-		d.state = stateLoaded
+		d.state = StateLoaded
 		return nil
 	}
 
@@ -174,6 +182,18 @@ func (d *Drone) GetSerialNumber() string {
 	return d.serialNumber
 }
 
+func (d *Drone) GetState() string {
+	return d.state
+}
+
+func (d *Drone) GetBatteryCapacity() uint8 {
+	return d.batteryCapacity
+}
+
+func (d *Drone) IsAvailableForLoading() bool {
+	return d.state == StateIdle && d.batteryCapacity >= forbiddenBatteryLevelForStateLoading
+}
+
 func validSerialNumber(serialNumber string) bool {
 	return len(serialNumber) > 0 && len(serialNumber) <= maxSerialNumberCharacters
 }
@@ -189,7 +209,7 @@ func validBatteryCapacity(batteryCapacity uint8) bool {
 func validModel(model string) bool {
 
 	switch model {
-	case modelLightweight, modelMiddleweight, modelCruiserweight, modelHeavyweight:
+	case ModelLightweight, ModelMiddleweight, ModelCruiserweight, ModelHeavyweight:
 		return true
 	}
 
@@ -199,7 +219,7 @@ func validModel(model string) bool {
 func validState(state string) bool {
 
 	switch state {
-	case stateIdle, stateLoading, stateLoaded, stateDelivering, stateDelivered, stateReturning:
+	case StateIdle, StateLoading, StateLoaded, StateDelivering, StateDelivered, StateReturning:
 		return true
 	}
 
@@ -208,5 +228,5 @@ func validState(state string) bool {
 
 //Prevent the drone from being in LOADING state if the battery level is **below 25%**
 func thereIsLoadingStateAndBatteryLevelUnderPercentage(batteryLevel string, percentage uint8) bool {
-	return batteryLevel == stateLoading && percentage < forbiddenBatteryLevelForStateLoading
+	return batteryLevel == StateLoading && percentage < forbiddenBatteryLevelForStateLoading
 }

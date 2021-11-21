@@ -1,4 +1,5 @@
 {
     "local_url":"localhost",
-    "api_port":"8899"
+    "api_port":"8080",
+    "log_period_minutes":1
 }

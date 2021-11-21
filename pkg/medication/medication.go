@@ -1,8 +1,10 @@
+// implements routines for manipulating medication objects.
 package medication
 
 import (
-	"errors"
 	"regexp"
+
+	"github.com/pkg/errors"
 )
 
 type (
@@ -40,6 +42,20 @@ func NewMedication(dto MedicationDTO) (*Medication, error) {
 		code:   dto.Code,
 		image:  dto.Image,
 	}, nil
+}
+
+func NewMedications(dtos []MedicationDTO) ([]Medication, error) {
+
+	medications := make([]Medication, 0)
+	for _, v := range dtos {
+		medication, err := NewMedication(v)
+		if err != nil {
+			return medications, errors.Wrapf(err, "successfully loaded medications: %d of %d", len(medications), len(dtos))
+		}
+		medications = append(medications, *medication)
+	}
+
+	return medications, nil
 }
 
 func (m *Medication) GetWeight() uint {
