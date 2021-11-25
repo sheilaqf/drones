@@ -25,6 +25,7 @@ type (
 	}
 )
 
+//get a pointer to a medication object from a medication DTO
 func NewMedication(dto MedicationDTO) (*Medication, error) {
 
 	//TODO: Check conditions here
@@ -44,6 +45,7 @@ func NewMedication(dto MedicationDTO) (*Medication, error) {
 	}, nil
 }
 
+//get a list medication object from a list of medication DTOs
 func NewMedications(dtos []MedicationDTO) ([]Medication, error) {
 
 	medications := make([]Medication, 0)
@@ -58,11 +60,22 @@ func NewMedications(dtos []MedicationDTO) ([]Medication, error) {
 	return medications, nil
 }
 
+//get weight of medication
 func (m *Medication) GetWeight() uint {
 	return m.weight
 }
 
+//get DTO of medication object excluding the image information in base64
 func (m *Medication) GetDTO() MedicationDTO {
+	return MedicationDTO{
+		Name:   m.name,
+		Weight: m.weight,
+		Code:   m.code,
+	}
+}
+
+//get DTO of medication object including the image information in base64
+func (m *Medication) GetDTOWithImage() MedicationDTO {
 	return MedicationDTO{
 		Name:   m.name,
 		Weight: m.weight,
@@ -71,6 +84,7 @@ func (m *Medication) GetDTO() MedicationDTO {
 	}
 }
 
+//check whether a name of medication is valid
 func isValidName(name string) bool {
 	match, err := regexp.MatchString("^[A-Za-z0-9?_-]+$", name)
 	if err != nil {
@@ -79,6 +93,7 @@ func isValidName(name string) bool {
 	return match
 }
 
+//check whether a code of medication is valid
 func isValidCode(name string) bool {
 	match, err := regexp.MatchString("^[A-Z0-9?_]+$", name)
 	if err != nil {

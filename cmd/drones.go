@@ -27,6 +27,7 @@ import (
 )
 
 type (
+	//contains all the global variables to use in the app
 	environment struct {
 		HttpServer                *http.Server
 		Router                    *mux.Router
@@ -35,6 +36,7 @@ type (
 		samplMedicationCaseBase64 string
 	}
 
+	//a http response body
 	Response struct {
 		OK      bool             `json:"ok"`
 		Details string           `json:"details,omitempty"`
@@ -338,13 +340,7 @@ func (env *environment) getAllDrones(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	jsonBytes, err := json.MarshalIndent(drones, "", "  ")
-	if err != nil {
-		log.Printf("all registered drones: %v", drones)
-	} else {
-		log.Printf("all registered drones: %s", string(jsonBytes))
-	}
-
+	env.printDataOfDrones(drones)
 }
 
 func (env *environment) addNewDrone(droneObj *drone.Drone) error {
@@ -371,6 +367,7 @@ func (env *environment) setLoadForDrone(load drone.DroneDTO) error {
 	return env.registeredDrones[load.SerialNumber].LoadSetOfMedications(load.Medications)
 }
 
+//preload during the start of the app, a list with some drones
 func (env *environment) preloadData() error {
 
 	env.loadSamplMedicationCaseBase64()
@@ -513,14 +510,26 @@ func (env *environment) preloadData() error {
 	return nil
 }
 
-func (env *environment) printDataOfDrones() {
+//
+func (env *environment) printDataOfDrones(drones []drone.DroneDTO) {
 
-	log.Printf("data of the %d registered drones:", len(env.registeredDrones))
-
-	for k, v := range env.registeredDrones {
-		log.Printf("drone with serial number %s:", k)
-		log.Printf("%+v:", v)
+	if drones == nil {
+		drones = make([]drone.DroneDTO, 0)
 	}
+
+	for _, v := range env.registeredDrones {
+		drones = append(drones, v.GetDTO())
+	}
+
+	log.Printf("data of the %d registered drones:", len(drones))
+
+	jsonBytes, err := json.MarshalIndent(drones, "", "  ")
+	if err != nil {
+		log.Printf("%v", drones)
+	} else {
+		log.Printf("%s", string(jsonBytes))
+	}
+
 }
 
 func (env *environment) checkDronesBatteryLevelsPeriodically() {

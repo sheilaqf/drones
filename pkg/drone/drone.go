@@ -52,6 +52,7 @@ type (
 	}
 )
 
+//get a pointer to a drone object from a drone DTO
 func NewDrone(dto DroneDTO) (*Drone, error) {
 
 	if !validSerialNumber(dto.SerialNumber) {
@@ -94,6 +95,7 @@ func NewDrone(dto DroneDTO) (*Drone, error) {
 	return drone, nil
 }
 
+//get the total weight of all medications on the drone
 func (d *Drone) CurrentWeight() uint16 {
 
 	currentWeight := uint16(0)
@@ -105,10 +107,12 @@ func (d *Drone) CurrentWeight() uint16 {
 	return currentWeight
 }
 
+//check whether the addition of a new medication does not exceed the maximun load capacity of the drone
 func (d *Drone) IsAcceptableLoad(medication medication.Medication) bool {
 	return medication.GetWeight()+uint(d.CurrentWeight()) <= uint(d.weightLimit)
 }
 
+//load a new medication on the drone
 func (d *Drone) LoadNewMedication(medication medication.Medication) error {
 
 	d.Lock()
@@ -128,6 +132,7 @@ func (d *Drone) LoadNewMedication(medication medication.Medication) error {
 	return errors.New("the drone must not being loaded with more weight that it can carry")
 }
 
+//load new medications on the drone
 func (d *Drone) LoadNewMedications(medications []medication.Medication) error {
 
 	successfullyLoaded := 0
@@ -142,6 +147,7 @@ func (d *Drone) LoadNewMedications(medications []medication.Medication) error {
 	return nil
 }
 
+//load new medications on the drone (using a list of DTOs)
 func (d *Drone) LoadSetOfMedications(medications []medication.MedicationDTO) error {
 
 	successfullyLoaded := 0
@@ -160,6 +166,7 @@ func (d *Drone) LoadSetOfMedications(medications []medication.MedicationDTO) err
 	return nil
 }
 
+//get DTO that represents a drone
 func (d *Drone) GetDTO() DroneDTO {
 
 	dto := DroneDTO{
@@ -178,22 +185,27 @@ func (d *Drone) GetDTO() DroneDTO {
 	return dto
 }
 
+//get serial number of drone
 func (d *Drone) GetSerialNumber() string {
 	return d.serialNumber
 }
 
+//get model of drone
 func (d *Drone) GetModel() string {
 	return d.model
 }
 
+//get state of drone
 func (d *Drone) GetState() string {
 	return d.state
 }
 
+//get battery capacityo of drone
 func (d *Drone) GetBatteryCapacity() uint8 {
 	return d.batteryCapacity
 }
 
+//get drone DTO with only the information of the serial number
 func (d *Drone) GetDTOWithSerialNumber() DroneDTO {
 
 	dto := DroneDTO{
@@ -203,6 +215,7 @@ func (d *Drone) GetDTOWithSerialNumber() DroneDTO {
 	return dto
 }
 
+//get drone DTO with only the information of the serial number and battery capacity
 func (d *Drone) GetDTOWithSerialNumberAndBatteryCapacity() DroneDTO {
 
 	dto := DroneDTO{
@@ -213,6 +226,7 @@ func (d *Drone) GetDTOWithSerialNumberAndBatteryCapacity() DroneDTO {
 	return dto
 }
 
+//get drone DTO with only the information of the serial number and medications (without medication's image)
 func (d *Drone) GetDTOWithSerialNumberAndMedications() DroneDTO {
 
 	dto := DroneDTO{
@@ -227,26 +241,32 @@ func (d *Drone) GetDTOWithSerialNumberAndMedications() DroneDTO {
 	return dto
 }
 
+//check whether the drone has loaded medications
 func (d *Drone) HasMedications() bool {
 	return len(d.medications) > 0
 }
 
+//check whether a drone is available for loading
 func (d *Drone) IsAvailableForLoading() bool {
 	return d.state == StateIdle && d.batteryCapacity >= forbiddenBatteryLevelForStateLoading
 }
 
+//check whether a serial number of drone is valid
 func validSerialNumber(serialNumber string) bool {
 	return len(serialNumber) > 0 && len(serialNumber) <= maxSerialNumberCharacters
 }
 
+//check whether a weight limit of drone is valid
 func validWeightLimit(weightLimit uint16) bool {
 	return weightLimit <= maxWeightLimit
 }
 
+//check whether a battery capacity of drone is valid
 func validBatteryCapacity(batteryCapacity uint8) bool {
 	return batteryCapacity > 0 && batteryCapacity <= maxBatteryCapacity
 }
 
+//check whether a model of drone is valid
 func validModel(model string) bool {
 
 	switch model {
@@ -257,6 +277,7 @@ func validModel(model string) bool {
 	return false
 }
 
+//check whether a state of drone is valid
 func validState(state string) bool {
 
 	switch state {
@@ -267,7 +288,7 @@ func validState(state string) bool {
 	return false
 }
 
-//Prevent the drone from being in LOADING state if the battery level is **below 25%**
+//prevent the drone from being in LOADING state if the battery level is **below 25%**
 func thereIsLoadingStateAndBatteryLevelUnderPercentage(batteryLevel string, percentage uint8) bool {
 	return batteryLevel == StateLoading && percentage < forbiddenBatteryLevelForStateLoading
 }
