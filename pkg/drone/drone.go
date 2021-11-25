@@ -182,6 +182,10 @@ func (d *Drone) GetSerialNumber() string {
 	return d.serialNumber
 }
 
+func (d *Drone) GetModel() string {
+	return d.model
+}
+
 func (d *Drone) GetState() string {
 	return d.state
 }

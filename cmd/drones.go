@@ -28,10 +28,11 @@ import (
 
 type (
 	environment struct {
-		HttpServer       *http.Server
-		Router           *mux.Router
-		Config           *config.Config
-		registeredDrones map[string]*drone.Drone // use SerialNumber as key
+		HttpServer                *http.Server
+		Router                    *mux.Router
+		Config                    *config.Config
+		registeredDrones          map[string]*drone.Drone // use SerialNumber as key
+		samplMedicationCaseBase64 string
 	}
 
 	Response struct {
@@ -40,8 +41,6 @@ type (
 		Drones  []drone.DroneDTO `json:"drones,omitempty"`
 	}
 )
-
-var samplMedicationCaseBase64 string
 
 func main() {
 
@@ -374,7 +373,7 @@ func (env *environment) setLoadForDrone(load drone.DroneDTO) error {
 
 func (env *environment) preloadData() error {
 
-	//loadSamplMedicationCaseBase64()
+	env.loadSamplMedicationCaseBase64()
 
 	env.registeredDrones = make(map[string]*drone.Drone)
 
@@ -389,25 +388,25 @@ func (env *environment) preloadData() error {
 				Name:   "Medication-A",
 				Code:   strings.ToUpper(randomdata.Alphanumeric(32)),
 				Weight: 20,
-				Image:  samplMedicationCaseBase64,
+				Image:  env.samplMedicationCaseBase64,
 			},
 			{
 				Name:   "Medication-B",
 				Code:   strings.ToUpper(randomdata.Alphanumeric(32)),
 				Weight: 40,
-				Image:  samplMedicationCaseBase64,
+				Image:  env.samplMedicationCaseBase64,
 			},
 			{
 				Name:   "Medication-C",
 				Code:   strings.ToUpper(randomdata.Alphanumeric(32)),
 				Weight: 25,
-				Image:  samplMedicationCaseBase64,
+				Image:  env.samplMedicationCaseBase64,
 			},
 			{
 				Name:   "Medication-D",
 				Code:   strings.ToUpper(randomdata.Alphanumeric(32)),
 				Weight: 10,
-				Image:  samplMedicationCaseBase64,
+				Image:  env.samplMedicationCaseBase64,
 			},
 		},
 	}
@@ -428,25 +427,25 @@ func (env *environment) preloadData() error {
 				Name:   "Medication-A",
 				Code:   strings.ToUpper(randomdata.Alphanumeric(32)),
 				Weight: 200,
-				Image:  samplMedicationCaseBase64,
+				Image:  env.samplMedicationCaseBase64,
 			},
 			{
 				Name:   "Medication-B",
 				Code:   strings.ToUpper(randomdata.Alphanumeric(32)),
 				Weight: 80,
-				Image:  samplMedicationCaseBase64,
+				Image:  env.samplMedicationCaseBase64,
 			},
 			{
 				Name:   "Medication-C",
 				Code:   strings.ToUpper(randomdata.Alphanumeric(32)),
 				Weight: 50,
-				Image:  samplMedicationCaseBase64,
+				Image:  env.samplMedicationCaseBase64,
 			},
 			{
 				Name:   "Medication-D",
 				Code:   strings.ToUpper(randomdata.Alphanumeric(32)),
 				Weight: 60,
-				Image:  samplMedicationCaseBase64,
+				Image:  env.samplMedicationCaseBase64,
 			},
 		},
 	}
@@ -480,13 +479,13 @@ func (env *environment) preloadData() error {
 				Name:   "Medication-C",
 				Code:   strings.ToUpper(randomdata.Alphanumeric(32)),
 				Weight: 300,
-				Image:  samplMedicationCaseBase64,
+				Image:  env.samplMedicationCaseBase64,
 			},
 			{
 				Name:   "Medication-D",
 				Code:   strings.ToUpper(randomdata.Alphanumeric(32)),
 				Weight: 90,
-				Image:  samplMedicationCaseBase64,
+				Image:  env.samplMedicationCaseBase64,
 			},
 		},
 	}
@@ -551,6 +550,24 @@ func (env *environment) checkDronesBatteryLevelsPeriodically() {
 	}
 }
 
+func (env *environment) loadSamplMedicationCaseBase64() {
+	// Open file on disk.
+	imagePath := "sample_medication_case_base64.jpg"
+	f, err := os.Open(imagePath)
+	if err != nil {
+		log.Printf("it was not possible to open %s: %v", imagePath, err)
+	}
+
+	// Read entire JPG into byte slice.
+	reader := bufio.NewReader(f)
+	content, err := ioutil.ReadAll(reader)
+	if err != nil {
+		log.Printf("error reading content of file %s: %v", imagePath, err)
+	}
+	// Encode as base64.
+	env.samplMedicationCaseBase64 = base64.StdEncoding.EncodeToString(content)
+}
+
 func writeError(w http.ResponseWriter, statusCode int, errMessage string) {
 
 	response := Response{
@@ -573,22 +590,4 @@ func writeError(w http.ResponseWriter, statusCode int, errMessage string) {
 	} else {
 		_, _ = fmt.Fprintln(w, errMessage)
 	}
-}
-
-func loadSamplMedicationCaseBase64() {
-	// Open file on disk.
-	imagePath := "sample_medication_case_base64.jpg"
-	f, err := os.Open(imagePath)
-	if err != nil {
-		log.Printf("it was not possible to open %s: %v", imagePath, err)
-	}
-
-	// Read entire JPG into byte slice.
-	reader := bufio.NewReader(f)
-	content, err := ioutil.ReadAll(reader)
-	if err != nil {
-		log.Printf("error reading content of file %s: %v", imagePath, err)
-	}
-	// Encode as base64.
-	samplMedicationCaseBase64 = base64.StdEncoding.EncodeToString(content)
 }
