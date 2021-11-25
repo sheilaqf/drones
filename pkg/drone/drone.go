@@ -190,6 +190,15 @@ func (d *Drone) GetBatteryCapacity() uint8 {
 	return d.batteryCapacity
 }
 
+func (d *Drone) GetDTOWithSerialNumber() DroneDTO {
+
+	dto := DroneDTO{
+		SerialNumber: d.serialNumber,
+	}
+
+	return dto
+}
+
 func (d *Drone) GetDTOWithSerialNumberAndBatteryCapacity() DroneDTO {
 
 	dto := DroneDTO{

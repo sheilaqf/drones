@@ -34,11 +34,11 @@ type (
 		registeredDrones map[string]*drone.Drone // use SerialNumber as key
 	}
 
-/* 	Response struct {
-	Ok       bool             `json:"ok"`
-	ErrorMsg string           `json:"details,omitempty"`
-	Drones   []drone.DroneDTO `json:"drones,omitempty"`
-} */
+	Response struct {
+		OK      bool             `json:"ok"`
+		Details string           `json:"details,omitempty"`
+		Drones  []drone.DroneDTO `json:"drones,omitempty"`
+	}
 )
 
 var samplMedicationCaseBase64 string
@@ -138,13 +138,25 @@ func (env *environment) registerDrone(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	err = json.NewEncoder(w).Encode(Response{
+		OK:      true,
+		Details: fmt.Sprintf("new drone with serial number %s added", droneObj.GetSerialNumber()),
+	})
+	if err != nil {
+		errMessage := "could not encode response"
+		log.Println(errMessage, ":", err)
+		writeError(w, http.StatusInternalServerError, errMessage)
+		return
+	}
+
 	log.Printf("new drone added: %+v", droneObj)
 }
 
 func (env *environment) loadMedications(w http.ResponseWriter, r *http.Request) {
-	d := drone.DroneDTO{}
 
-	err := json.NewDecoder(r.Body).Decode(&d)
+	dto := drone.DroneDTO{}
+
+	err := json.NewDecoder(r.Body).Decode(&dto)
 	if err != nil {
 		errMessage := "could not decode drone json object"
 		log.Println(errMessage, ":", err)
@@ -152,13 +164,26 @@ func (env *environment) loadMedications(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	err = env.setLoadForDrone(d)
+	err = env.setLoadForDrone(dto)
 	if err != nil {
 		errMessage := fmt.Sprintf("error while trying to load medications on drone: %s", err.Error())
 		log.Println(errMessage)
 		writeError(w, http.StatusBadRequest, errMessage)
 		return
 	}
+
+	err = json.NewEncoder(w).Encode(Response{
+		OK:      true,
+		Details: fmt.Sprintf("medications loaded in drone with serial number %s added", dto.SerialNumber),
+	})
+	if err != nil {
+		errMessage := "could not encode response"
+		log.Println(errMessage, ":", err)
+		writeError(w, http.StatusInternalServerError, errMessage)
+		return
+	}
+
+	log.Printf("medications loaded in drone %s", dto.SerialNumber)
 }
 
 func (env *environment) getMedicationsFromDrone(w http.ResponseWriter, r *http.Request) {
@@ -189,7 +214,11 @@ func (env *environment) getMedicationsFromDrone(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	err := json.NewEncoder(w).Encode(droneObj.GetDTO().Medications)
+	err := json.NewEncoder(w).Encode(Response{
+		OK:      true,
+		Details: fmt.Sprintf("this are the medications loaded in drone with serial number %s", droneObj.GetSerialNumber()),
+		Drones:  []drone.DroneDTO{droneObj.GetDTOWithSerialNumberAndMedications()},
+	})
 	if err != nil {
 		errMessage := "could not encode response"
 		log.Println(errMessage, ":", err)
@@ -221,7 +250,11 @@ func (env *environment) getBatteryLevelFromDrone(w http.ResponseWriter, r *http.
 		return
 	}
 
-	err := json.NewEncoder(w).Encode(droneObj.GetDTOWithSerialNumberAndBatteryCapacity())
+	err := json.NewEncoder(w).Encode(Response{
+		OK:      true,
+		Details: fmt.Sprintf("this is the battery capacity of drone with serial number %s", droneObj.GetSerialNumber()),
+		Drones:  []drone.DroneDTO{droneObj.GetDTOWithSerialNumberAndBatteryCapacity()},
+	})
 	if err != nil {
 		errMessage := "could not encode response"
 		log.Println(errMessage, ":", err)
@@ -234,17 +267,28 @@ func (env *environment) getBatteryLevelFromDrone(w http.ResponseWriter, r *http.
 
 func (env *environment) getDronesAvailablesForLoading(w http.ResponseWriter, r *http.Request) {
 
-	dronesSerialNumbers := make([]string, 0)
+	drones := make([]drone.DroneDTO, 0)
 
 	for _, v := range env.registeredDrones {
 		if v.IsAvailableForLoading() {
-			dronesSerialNumbers = append(dronesSerialNumbers, v.GetSerialNumber())
+			drones = append(drones, v.GetDTOWithSerialNumber())
 		} /* else {
 			log.Printf("not available S/N: %s State: %s Battery: %d", v.GetSerialNumber(), v.GetState(), v.GetBatteryCapacity())
 		} */
 	}
 
-	err := json.NewEncoder(w).Encode(dronesSerialNumbers)
+	if len(drones) == 0 {
+		errMessage := "there is not available drones for loading"
+		log.Println(errMessage)
+		writeError(w, http.StatusNotFound, errMessage)
+		return
+	}
+
+	err := json.NewEncoder(w).Encode(Response{
+		OK:      true,
+		Details: fmt.Sprintf("this are the %d available drones for loading", len(drones)),
+		Drones:  drones,
+	})
 	if err != nil {
 		errMessage := "could not encode response"
 		log.Println(errMessage, ":", err)
@@ -252,7 +296,7 @@ func (env *environment) getDronesAvailablesForLoading(w http.ResponseWriter, r *
 		return
 	}
 
-	log.Printf("%v", dronesSerialNumbers)
+	log.Printf("drones availables for loading: %v", drones)
 }
 
 func (env *environment) getAllDrones(w http.ResponseWriter, r *http.Request) {
@@ -271,7 +315,7 @@ func (env *environment) getAllDrones(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("%v", drones)
+	log.Printf("all registered drones: %v", drones)
 }
 
 func (env *environment) addNewDrone(droneObj *drone.Drone) error {
@@ -469,6 +513,19 @@ func (env *environment) checkDronesBatteryLevelsPeriodically() {
 }
 
 func writeError(w http.ResponseWriter, statusCode int, errMessage string) {
+
+	response := Response{
+		OK:      false,
+		Details: errMessage,
+	}
+
+	responseBytes, err := json.Marshal(response)
+	if err != nil {
+		log.Printf("response object could not be marshaled: %v", err)
+	} else {
+		errMessage = string(responseBytes)
+		log.Println(errMessage)
+	}
 
 	w.WriteHeader(statusCode)
 
