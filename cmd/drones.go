@@ -89,6 +89,7 @@ func main() {
 	log.Println("Drones Management API is now closed")
 }
 
+//start http client
 func (env *environment) startServer(cfg *config.Config) {
 
 	env.Router = mux.NewRouter()
@@ -112,6 +113,7 @@ func (env *environment) startServer(cfg *config.Config) {
 	log.Fatal(env.HttpServer.ListenAndServe())
 }
 
+//http handler to register a new drone
 func (env *environment) registerDrone(w http.ResponseWriter, r *http.Request) {
 	d := drone.DroneDTO{}
 
@@ -159,6 +161,7 @@ func (env *environment) registerDrone(w http.ResponseWriter, r *http.Request) {
 
 }
 
+//http handler to load medications on a drone
 func (env *environment) loadMedications(w http.ResponseWriter, r *http.Request) {
 
 	dto := drone.DroneDTO{}
@@ -193,6 +196,7 @@ func (env *environment) loadMedications(w http.ResponseWriter, r *http.Request) 
 	log.Printf("medications loaded in drone %s", dto.SerialNumber)
 }
 
+//http handler to get the medication loaded on a drone
 func (env *environment) getMedicationsFromDrone(w http.ResponseWriter, r *http.Request) {
 
 	parameter := "serial_number"
@@ -242,6 +246,7 @@ func (env *environment) getMedicationsFromDrone(w http.ResponseWriter, r *http.R
 
 }
 
+//http handler to get the battery level of a drone
 func (env *environment) getBatteryLevelFromDrone(w http.ResponseWriter, r *http.Request) {
 
 	parameter := "serial_number"
@@ -284,6 +289,7 @@ func (env *environment) getBatteryLevelFromDrone(w http.ResponseWriter, r *http.
 
 }
 
+//http handler to get all drones availables for loading
 func (env *environment) getDronesAvailablesForLoading(w http.ResponseWriter, r *http.Request) {
 
 	drones := make([]drone.DroneDTO, 0)
@@ -324,6 +330,7 @@ func (env *environment) getDronesAvailablesForLoading(w http.ResponseWriter, r *
 
 }
 
+//http handler to get all registered drones
 func (env *environment) getAllDrones(w http.ResponseWriter, r *http.Request) {
 
 	drones := make([]drone.DroneDTO, 0)
@@ -343,6 +350,7 @@ func (env *environment) getAllDrones(w http.ResponseWriter, r *http.Request) {
 	env.printDataOfDrones(drones)
 }
 
+//add a new drone to the list of registered drones
 func (env *environment) addNewDrone(droneObj *drone.Drone) error {
 
 	if env.registeredDrones == nil {
@@ -358,6 +366,7 @@ func (env *environment) addNewDrone(droneObj *drone.Drone) error {
 	return nil
 }
 
+//set load for a drone using a DTO with the information of the serial number of the drone and the medications to load
 func (env *environment) setLoadForDrone(load drone.DroneDTO) error {
 
 	if env.registeredDrones[load.SerialNumber] == nil {
@@ -510,7 +519,7 @@ func (env *environment) preloadData() error {
 	return nil
 }
 
-//
+//print data of registered drones in log
 func (env *environment) printDataOfDrones(drones []drone.DroneDTO) {
 
 	if drones == nil {
@@ -532,6 +541,7 @@ func (env *environment) printDataOfDrones(drones []drone.DroneDTO) {
 
 }
 
+//periodic check on log of battery levels
 func (env *environment) checkDronesBatteryLevelsPeriodically() {
 
 	ticker := time.NewTicker(time.Duration(env.Config.LogPeriodMinutes) * time.Minute)
@@ -559,6 +569,7 @@ func (env *environment) checkDronesBatteryLevelsPeriodically() {
 	}
 }
 
+//load of sample of medication case image (convert the image to base64)
 func (env *environment) loadSamplMedicationCaseBase64() {
 	// Open file on disk.
 	imagePath := "sample_medication_case_base64.jpg"
@@ -577,6 +588,7 @@ func (env *environment) loadSamplMedicationCaseBase64() {
 	env.samplMedicationCaseBase64 = base64.StdEncoding.EncodeToString(content)
 }
 
+//print error responses
 func writeError(w http.ResponseWriter, statusCode int, errMessage string) {
 
 	response := Response{
