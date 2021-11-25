@@ -149,7 +149,13 @@ func (env *environment) registerDrone(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("new drone added: %+v", droneObj)
+	jsonBytes, err := json.MarshalIndent(droneObj.GetDTO(), "", "  ")
+	if err != nil {
+		log.Printf("new drone added: %+v", droneObj)
+	} else {
+		log.Printf("new drone added: %+v", string(jsonBytes))
+	}
+
 }
 
 func (env *environment) loadMedications(w http.ResponseWriter, r *http.Request) {
@@ -226,7 +232,13 @@ func (env *environment) getMedicationsFromDrone(w http.ResponseWriter, r *http.R
 		return
 	}
 
-	log.Printf("%v", droneObj.GetDTO().Medications)
+	jsonBytes, err := json.MarshalIndent(droneObj.GetDTO().Medications, "", "  ")
+	if err != nil {
+		log.Printf("medications in drone %s are: \n %v", droneObj.GetSerialNumber(), droneObj.GetDTO().Medications)
+	} else {
+		log.Printf("medications in drone %s are: \n %v", droneObj.GetSerialNumber(), string(jsonBytes))
+	}
+
 }
 
 func (env *environment) getBatteryLevelFromDrone(w http.ResponseWriter, r *http.Request) {
@@ -262,7 +274,13 @@ func (env *environment) getBatteryLevelFromDrone(w http.ResponseWriter, r *http.
 		return
 	}
 
-	log.Printf("%v", droneObj.GetDTOWithSerialNumberAndBatteryCapacity())
+	jsonBytes, err := json.MarshalIndent(droneObj.GetDTOWithSerialNumberAndBatteryCapacity(), "", "  ")
+	if err != nil {
+		log.Printf("battery capacity of drone: %v", droneObj.GetDTOWithSerialNumberAndBatteryCapacity())
+	} else {
+		log.Printf("battery capacity of drone: %s", string(jsonBytes))
+	}
+
 }
 
 func (env *environment) getDronesAvailablesForLoading(w http.ResponseWriter, r *http.Request) {
@@ -296,7 +314,13 @@ func (env *environment) getDronesAvailablesForLoading(w http.ResponseWriter, r *
 		return
 	}
 
-	log.Printf("drones availables for loading: %v", drones)
+	jsonBytes, err := json.MarshalIndent(drones, "", "  ")
+	if err != nil {
+		log.Printf("drones availables for loading: %v", drones)
+	} else {
+		log.Printf("drones availables for loading: %s", string(jsonBytes))
+	}
+
 }
 
 func (env *environment) getAllDrones(w http.ResponseWriter, r *http.Request) {
@@ -315,7 +339,13 @@ func (env *environment) getAllDrones(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("all registered drones: %v", drones)
+	jsonBytes, err := json.MarshalIndent(drones, "", "  ")
+	if err != nil {
+		log.Printf("all registered drones: %v", drones)
+	} else {
+		log.Printf("all registered drones: %s", string(jsonBytes))
+	}
+
 }
 
 func (env *environment) addNewDrone(droneObj *drone.Drone) error {
@@ -349,7 +379,7 @@ func (env *environment) preloadData() error {
 	env.registeredDrones = make(map[string]*drone.Drone)
 
 	droneDTO1 := drone.DroneDTO{
-		SerialNumber:    randomdata.Alphanumeric(100),
+		SerialNumber:    randomdata.Alphanumeric(50),
 		Model:           drone.ModelLightweight,
 		WeightLimit:     150,
 		BatteryCapacity: 100,
@@ -388,7 +418,7 @@ func (env *environment) preloadData() error {
 	env.registeredDrones[droneDTO1.SerialNumber] = drone1
 
 	droneDTO2 := drone.DroneDTO{
-		SerialNumber:    randomdata.Alphanumeric(100),
+		SerialNumber:    randomdata.Alphanumeric(50),
 		Model:           drone.ModelHeavyweight,
 		WeightLimit:     500,
 		BatteryCapacity: 100,
@@ -427,7 +457,7 @@ func (env *environment) preloadData() error {
 	env.registeredDrones[droneDTO2.SerialNumber] = drone2
 
 	droneDTO3 := drone.DroneDTO{
-		SerialNumber:    randomdata.Alphanumeric(100),
+		SerialNumber:    randomdata.Alphanumeric(50),
 		Model:           drone.ModelMiddleweight,
 		WeightLimit:     300,
 		BatteryCapacity: 100,
@@ -440,7 +470,7 @@ func (env *environment) preloadData() error {
 	env.registeredDrones[droneDTO3.SerialNumber] = drone3
 
 	droneDTO4 := drone.DroneDTO{
-		SerialNumber:    randomdata.Alphanumeric(100),
+		SerialNumber:    randomdata.Alphanumeric(50),
 		Model:           drone.ModelCruiserweight,
 		WeightLimit:     400,
 		BatteryCapacity: 100,
@@ -467,7 +497,7 @@ func (env *environment) preloadData() error {
 	env.registeredDrones[droneDTO4.SerialNumber] = drone4
 
 	droneDTO5 := drone.DroneDTO{
-		SerialNumber:    randomdata.Alphanumeric(100),
+		SerialNumber:    randomdata.Alphanumeric(50),
 		Model:           drone.ModelLightweight,
 		WeightLimit:     125,
 		BatteryCapacity: 100,
@@ -504,9 +534,18 @@ func (env *environment) checkDronesBatteryLevelsPeriodically() {
 		log.Println("external command: periodic check of drones battery levels is stopped, due to restart signal")
 		return */
 		case <-ticker.C:
-			log.Print("check of battery levels:")
-			for k, v := range env.registeredDrones {
-				log.Printf("drone serial number: %s has a battery level of %d %%", k, v.GetBatteryCapacity())
+			drones := make([]drone.DroneDTO, 0)
+			log.Print("check of drones's battery levels:")
+			for _, v := range env.registeredDrones {
+				drones = append(drones, v.GetDTOWithSerialNumberAndBatteryCapacity())
+				//log.Printf("drone serial number: %s has a battery level of %d %%", k, v.GetBatteryCapacity())
+			}
+
+			jsonBytes, err := json.MarshalIndent(drones, "", "  ")
+			if err != nil {
+				log.Printf("list of drones's battery levels could not be marshaled: %v", err)
+			} else {
+				log.Println(string(jsonBytes))
 			}
 		}
 	}
