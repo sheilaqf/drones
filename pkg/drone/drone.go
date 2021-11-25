@@ -190,6 +190,34 @@ func (d *Drone) GetBatteryCapacity() uint8 {
 	return d.batteryCapacity
 }
 
+func (d *Drone) GetDTOWithSerialNumberAndBatteryCapacity() DroneDTO {
+
+	dto := DroneDTO{
+		SerialNumber:    d.serialNumber,
+		BatteryCapacity: d.batteryCapacity,
+	}
+
+	return dto
+}
+
+func (d *Drone) GetDTOWithSerialNumberAndMedications() DroneDTO {
+
+	dto := DroneDTO{
+		SerialNumber: d.serialNumber,
+		Medications:  make([]medication.MedicationDTO, 0),
+	}
+
+	for _, v := range d.medications {
+		dto.Medications = append(dto.Medications, v.GetDTO())
+	}
+
+	return dto
+}
+
+func (d *Drone) HasMedications() bool {
+	return len(d.medications) > 0
+}
+
 func (d *Drone) IsAvailableForLoading() bool {
 	return d.state == StateIdle && d.batteryCapacity >= forbiddenBatteryLevelForStateLoading
 }
