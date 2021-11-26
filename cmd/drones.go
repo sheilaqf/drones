@@ -196,7 +196,7 @@ func (env *environment) loadMedications(w http.ResponseWriter, r *http.Request) 
 	log.Printf("medications loaded in drone %s", dto.SerialNumber)
 }
 
-//http handler to get the medication loaded on a drone
+//http handler to get the medications loaded on a drone
 func (env *environment) getMedicationsFromDrone(w http.ResponseWriter, r *http.Request) {
 
 	parameter := "serial_number"
