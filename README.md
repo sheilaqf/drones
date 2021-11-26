@@ -5,7 +5,7 @@
 ### Testing the whole project
 go test ./...
 
-### For testing individual package such as drone or medication, the following command need to be run with the command line located on those directories
+### For unit tests on individual packages such as drone or medication, the following command need to be run with the command line located on those directories
 
 go test
 
