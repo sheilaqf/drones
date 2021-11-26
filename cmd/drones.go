@@ -67,7 +67,7 @@ func main() {
 
 	err = env.preloadData()
 	if err != nil {
-		log.Printf("preload of data failed: %v", err)
+		log.Fatalf("preload of data failed: %v", err)
 	}
 	log.Println("preload of data successfully completed...")
 
@@ -514,6 +514,119 @@ func (env *environment) preloadData() error {
 	}
 	env.registeredDrones[droneDTO5.SerialNumber] = drone5
 
+	droneDTO6 := drone.DroneDTO{
+		SerialNumber:    randomdata.Alphanumeric(50),
+		Model:           drone.ModelLightweight,
+		WeightLimit:     125,
+		BatteryCapacity: 100,
+		State:           drone.StateIdle,
+		Medications: []medication.MedicationDTO{
+			{
+				Name:   "Medication-Y",
+				Code:   strings.ToUpper(randomdata.Alphanumeric(32)),
+				Weight: 60,
+				Image:  env.samplMedicationCaseBase64,
+			},
+			{
+				Name:   "Medication-Z",
+				Code:   strings.ToUpper(randomdata.Alphanumeric(32)),
+				Weight: 30,
+				Image:  env.samplMedicationCaseBase64,
+			},
+		},
+	}
+	drone6, err := drone.NewDrone(droneDTO6)
+	if err != nil {
+		return fmt.Errorf("error while creating preloaded drone with serial number %s:%v", droneDTO6.SerialNumber, err)
+	}
+	env.registeredDrones[droneDTO6.SerialNumber] = drone6
+
+	droneDTO7 := drone.DroneDTO{
+		SerialNumber:    randomdata.Alphanumeric(50),
+		Model:           drone.ModelHeavyweight,
+		WeightLimit:     500,
+		BatteryCapacity: 100,
+		State:           drone.StateIdle,
+		Medications: []medication.MedicationDTO{
+			{
+				Name:   "Medication-X",
+				Code:   strings.ToUpper(randomdata.Alphanumeric(32)),
+				Weight: 400,
+				Image:  env.samplMedicationCaseBase64,
+			},
+		},
+	}
+	drone7, err := drone.NewDrone(droneDTO7)
+	if err != nil {
+		return fmt.Errorf("error while creating preloaded drone with serial number %s:%v", droneDTO7.SerialNumber, err)
+	}
+	env.registeredDrones[droneDTO7.SerialNumber] = drone7
+
+	droneDTO8 := drone.DroneDTO{
+		SerialNumber:    randomdata.Alphanumeric(50),
+		Model:           drone.ModelHeavyweight,
+		WeightLimit:     500,
+		BatteryCapacity: 100,
+		State:           drone.StateIdle,
+	}
+	drone8, err := drone.NewDrone(droneDTO8)
+	if err != nil {
+		return fmt.Errorf("error while creating preloaded drone with serial number %s:%v", droneDTO8.SerialNumber, err)
+	}
+	env.registeredDrones[droneDTO8.SerialNumber] = drone8
+
+	droneDTO9 := drone.DroneDTO{
+		SerialNumber:    randomdata.Alphanumeric(50),
+		Model:           drone.ModelHeavyweight,
+		WeightLimit:     500,
+		BatteryCapacity: 100,
+		State:           drone.StateIdle,
+		Medications: []medication.MedicationDTO{
+			{
+				Name:   "Medication-A",
+				Code:   strings.ToUpper(randomdata.Alphanumeric(32)),
+				Weight: 200,
+				Image:  env.samplMedicationCaseBase64,
+			},
+			{
+				Name:   "Medication-B",
+				Code:   strings.ToUpper(randomdata.Alphanumeric(32)),
+				Weight: 80,
+				Image:  env.samplMedicationCaseBase64,
+			},
+			{
+				Name:   "Medication-C",
+				Code:   strings.ToUpper(randomdata.Alphanumeric(32)),
+				Weight: 50,
+				Image:  env.samplMedicationCaseBase64,
+			},
+			{
+				Name:   "Medication-D",
+				Code:   strings.ToUpper(randomdata.Alphanumeric(32)),
+				Weight: 60,
+				Image:  env.samplMedicationCaseBase64,
+			},
+		},
+	}
+	drone9, err := drone.NewDrone(droneDTO9)
+	if err != nil {
+		return fmt.Errorf("error while creating preloaded drone with serial number %s:%v", droneDTO9.SerialNumber, err)
+	}
+	env.registeredDrones[droneDTO9.SerialNumber] = drone9
+
+	droneDTO10 := drone.DroneDTO{
+		SerialNumber:    randomdata.Alphanumeric(50),
+		Model:           drone.ModelMiddleweight,
+		WeightLimit:     250,
+		BatteryCapacity: 100,
+		State:           drone.StateIdle,
+	}
+	drone10, err := drone.NewDrone(droneDTO10)
+	if err != nil {
+		return fmt.Errorf("error while creating preloaded drone with serial number %s:%v", droneDTO8.SerialNumber, err)
+	}
+	env.registeredDrones[droneDTO10.SerialNumber] = drone10
+
 	//env.printDataOfDrones()
 
 	return nil
@@ -553,7 +666,7 @@ func (env *environment) checkDronesBatteryLevelsPeriodically() {
 		return */
 		case <-ticker.C:
 			drones := make([]drone.DroneDTO, 0)
-			log.Print("check of drones's battery levels:")
+			log.Printf("check of (%d) drones's battery levels:", len(env.registeredDrones))
 			for _, v := range env.registeredDrones {
 				drones = append(drones, v.GetDTOWithSerialNumberAndBatteryCapacity())
 				//log.Printf("drone serial number: %s has a battery level of %d %%", k, v.GetBatteryCapacity())
