@@ -1,17 +1,22 @@
 # Drones
 
-#How to test:
+##How to test:
 
 go test ./...
 
-#How to build for current SO:
+### Registering a drone using curl command
+
+curl -H "Content-Type: application/json" -v -X POST "http://localhost:8099/drone/register" --dat
+a '{"serial_number":"SQF-831030_1400","model":"Cruiserweight","weight_limit":350,"battery_capacity":100,"state":"IDLE"}'
+
+##How to build for current SO:
 
 go build cmd/drones.go
 
-#How to build for current Linux:
+##How to build for Linux:
 
 batch.bat
 
-#How to run:
+##How to run:
 
 go run cmd/drones.go
