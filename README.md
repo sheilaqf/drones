@@ -2,7 +2,12 @@
 
 ## How to test using go commands:
 
+### Testing the whole project
 go test ./...
+
+### For testing individual package such as drone or medication, the following command need to be run with the command line located on those directories
+
+go test
 
 ## How to test using curl commands:
 ### Registering a drone
@@ -43,7 +48,7 @@ curl -v "http://localhost:8099/drone/medications?serial_number=SQF-831030_1400"
 
 go build cmd/drones.go
 
-## To build for Linux, please run the batch.bat file (you need to edit it in case of build for other SO):
+## To build for Linux, please run the batch.bat file (can be edit it in case of build for other SO):
 
 batch.bat
 
